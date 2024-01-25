@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.plaaaa.R

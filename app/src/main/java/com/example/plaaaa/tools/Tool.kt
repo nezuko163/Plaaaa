@@ -11,15 +11,15 @@ import java.io.IOException
 class Tool {
     companion object {
         fun saveBitmapToTemporaryFile(bitmap: Bitmap): File? {
-            try {
+            return try {
                 val file = File.createTempFile("temp", ".jpg")
                 val outputStream = FileOutputStream(file)
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 outputStream.close()
-                return file
+                file
             } catch (e: IOException) {
                 e.printStackTrace()
-                return null
+                null
             }
         }
 

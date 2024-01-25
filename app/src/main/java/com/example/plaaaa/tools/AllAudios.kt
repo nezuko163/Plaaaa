@@ -8,7 +8,7 @@ import com.example.plaaaa.adapter.Audio
 
 class AllAudios {
     companion object {
-        public fun getAudios(context: Context): ArrayList<Audio> {
+        fun getAudios(context: Context): ArrayList<Audio> {
             val lst_audio = ArrayList<Audio>()
 
             MediaFacer.withAudioContex(context)

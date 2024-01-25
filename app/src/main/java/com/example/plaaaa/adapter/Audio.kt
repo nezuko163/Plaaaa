@@ -1,6 +1,5 @@
 package com.example.plaaaa.adapter
 
-import android.graphics.Bitmap
 import android.net.Uri
 
 data class Audio(
