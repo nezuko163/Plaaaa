@@ -120,13 +120,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun changePlayIcon(isPlaying: Boolean) {
         if (isPlaying) {
-            picasso
-                .load(R.drawable.pause)
-                .into(binding.btmsheet.play)
+//            picasso
+//                .load(R.drawable.pause)
+//                .error(R.drawable.pause)
+//                .into(binding.btmsheet.play)
+            binding.btmsheet.play.setImageResource(R.drawable.pause)
         } else {
-            picasso
-                .load(R.drawable.play)
-                .into(binding.btmsheet.play)
+//            picasso
+//                .load(R.drawable.play)
+//                .error(R.drawable.play)
+//                .into(binding.btmsheet.play)
+            binding.btmsheet.play.setImageResource(R.drawable.play)
         }
     }
 }
