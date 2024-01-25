@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/btmsheet"
+    android:layout_width="match_parent"
+    android:layout_height="10000dp"
+    android:background="@drawable/rounded"
+    app:behavior_hideable="true"
+    app:behavior_peekHeight="80dp"
+    android:clickable="true"
+    app:layout_behavior="@string/bottom_sheet_behavior">
+
+    <ImageView
+        android:id="@+id/arrow_img"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="center"
+        android:src="@drawable/baseline_expand_less_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/icon"
+        android:layout_width="@dimen/icon_btm_sheet"
+        android:layout_height="@dimen/icon_btm_sheet"
+        android:adjustViewBounds="true"
+        android:padding="50dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/arrow_img"
+        app:shapeAppearanceOverlay="@style/icon_btm_sheet"
+        app:srcCompat="@drawable/flowers" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slide"
+        style="@style/Widget.AppCompat.SeekBar"
+        android:layout_width="@dimen/slider_w"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/icon"
+        app:thumbColor="@color/aqua"
+        app:thumbRadius="7dp"
+        app:trackColorActive="@color/aqua"
+        app:trackColorInactive="@color/cyan"
+        app:trackHeight="4dp" />
+
+    <TextView
+        android:id="@+id/time_now"
+        style="@style/TextAppearance.AppCompat.TextTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="1:23"
+        app:layout_constraintStart_toStartOf="@id/slide"
+        app:layout_constraintTop_toBottomOf="@+id/slide" />
+
+    <TextView
+        android:id="@+id/time_left"
+        style="@style/TextAppearance.AppCompat.TextTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="15dp"
+        android:text="1:23"
+        app:layout_constraintEnd_toEndOf="@id/slide"
+        app:layout_constraintTop_toBottomOf="@+id/slide" />
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/TextAppearance.AppCompat.Title.Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="1asad1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/time_left" />
+
+    <TextView
+        android:id="@+id/author"
+        style="@style/TextAppearance.AppCompat.Title.Subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="1asad1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name" />
+
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:id="@+id/btns"
+        android:layout_width="270dp"
+        android:layout_height="90dp"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/author">
+
+        <ImageButton
+            android:id="@+id/previous"
+            android:layout_width="0dp"
+
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/baseline_fast_rewind_24" />
+
+        <ImageButton
+            android:id="@+id/play"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/play" />
+
+        <ImageButton
+            android:id="@+id/next"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/baseline_fast_forward_24" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

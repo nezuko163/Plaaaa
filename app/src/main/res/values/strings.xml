@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Plaaaa</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="perm_request_rationale_title">разрешение\n</string>
+    <string name="perm_request_rationale">ну бля\n</string>
+    <string name="request_perm_again">согл\n</string>
+    <string name="dismiss">не согл</string>
+</resources>

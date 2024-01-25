@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="audio_height">70dp</dimen>
+    <dimen name="audio_icon">50dp</dimen>
+    <dimen name="icon_btm_sheet">350dp</dimen>
+    <dimen name="icon_corner_radius">20dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+    <dimen name="slider_w">300dp</dimen>
+
+</resources>
