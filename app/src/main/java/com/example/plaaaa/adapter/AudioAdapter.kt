@@ -20,6 +20,7 @@ class AudioAdapter : RecyclerView.Adapter<AudioAdapter.AudioViewHolder>() {
     private lateinit var lastTrack: AudioViewHolder
     private val picasso = Picasso.get()
 
+    var pos = 0
     lateinit var onTrackClick: (Audio) -> Unit
 
     companion object {
@@ -30,8 +31,10 @@ class AudioAdapter : RecyclerView.Adapter<AudioAdapter.AudioViewHolder>() {
         val binding = AudioItemBinding.bind(item)
         var isPlayable = false
 
+
         init {
             item.setOnClickListener {
+                pos = bindingAdapterPosition
                 Log.i(TAG, "123123: 123")
                 onTrackClick.invoke(lst[bindingAdapterPosition])
 
@@ -92,6 +95,8 @@ class AudioAdapter : RecyclerView.Adapter<AudioAdapter.AudioViewHolder>() {
             LayoutInflater.from(parent.context).inflate(R.layout.audio_item, parent, false)
         return AudioViewHolder(itemView)
     }
+
+
 
     override fun getItemCount() = lst.size
 

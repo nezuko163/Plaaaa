@@ -1,6 +1,5 @@
-package com.example.plaaaa.btmSheet
+package com.example.plaaaa.views
 
-import android.util.Log
 import android.view.View
 import com.example.plaaaa.R
 import com.example.plaaaa.adapter.Audio
@@ -56,6 +55,9 @@ class BtmSheeet(val binding: BtmSheetBinding) {
 
         binding.name.text = audio.name
         binding.author.text = audio.artist
+
+        binding.slide.value = 0f
+        binding.slide.valueTo = (audio.duration / 1000).toFloat()
 
         if (sheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) sheetBehavior.state =
             BottomSheetBehavior.STATE_COLLAPSED
