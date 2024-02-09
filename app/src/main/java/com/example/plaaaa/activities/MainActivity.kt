@@ -18,6 +18,8 @@ import com.squareup.picasso.Picasso
 import com.example.plaaaa.tools.PermissionUtil
 import com.google.android.material.slider.Slider
 
+
+
 class MainActivity : AppCompatActivity() {
     private lateinit var sheetBehavior: BtmSheeet
     private lateinit var binding: ActivityMainBinding
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initPlayer() {
         player = Player(applicationContext)
-        player.onCompletion = { addOnCompletionListener() }
+        player.onCompletionListener = { onCompletion() }
     }
 
     private fun initList() {
@@ -134,13 +136,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             next.setOnClickListener {
-                val next = player.nextTrack() ?: return@setOnClickListener
-
-                val uri = next.audio_uri ?: return@setOnClickListener
-
-                sheetBehavior.bindBtmSheet(next)
-                player.other(uri)
-                player.play()
+                playNext()
             }
         }
 
@@ -148,6 +144,16 @@ class MainActivity : AppCompatActivity() {
 
         sheetBehavior = BtmSheeet(binding.btmsheet)
         sheetBehavior.initBtmSheet()
+    }
+
+    private fun playNext() {
+        val next = player.nextTrack() ?: return
+
+        val uri = next.audio_uri ?: return
+
+        sheetBehavior.bindBtmSheet(next)
+        player.other(uri)
+        player.play()
     }
 
     private fun initSlider() {
@@ -164,22 +170,14 @@ class MainActivity : AppCompatActivity() {
             })
 
             slide.addOnChangeListener { slider, value, fromUser ->
-                timeNow.text = "${value.toInt() / 60}:${(value.toInt() % 60)}"
+                val mins = value.toInt() / 60
+                val secs = value.toInt() % 60
+                timeNow.text = "${mins}:${secs.toString().padStart(2, '0')}"
             }
         }
 
     }
 
-    private fun addOnCompletionListener() {
-        player.mediaPlayer.setOnCompletionListener {
-            val audio = player.nextTrack()
-            if (audio == null) return@setOnCompletionListener
-            if (audio.audio_uri == null) return@setOnCompletionListener
-            sheetBehavior.bindBtmSheet(audio)
-            player.other(audio.audio_uri)
-            player.play()
-        }
-    }
 
     private fun changePlayIcon(isPlaying: Boolean) {
         if (isPlaying) {
@@ -195,5 +193,9 @@ class MainActivity : AppCompatActivity() {
 //                .error(R.drawable.play)
 //                .into(binding.btmsheet.play)
         }
+    }
+
+    private fun onCompletion() {
+        playNext()
     }
 }

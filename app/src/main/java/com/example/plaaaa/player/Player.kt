@@ -13,10 +13,9 @@ import java.lang.IllegalStateException
 open class Player(open val context: Context) {
     lateinit var mediaPlayer: MediaPlayer
     lateinit var lst: ArrayList<Audio>
-    lateinit var onCompletion: () -> Unit
-
+    lateinit var onCompletionListener: () -> Unit
     var isLooping = false
-    var curIndex : Int? = null
+    var curIndex: Int? = null
     var isSrcSetted = false
     var lastTrack: Uri? = null
 
@@ -29,16 +28,16 @@ open class Player(open val context: Context) {
     private fun createMp(uri: Uri) {
         mediaPlayer = MediaPlayer.create(context, uri)
         mediaPlayer.setOnCompletionListener {
-            onCompletion.invoke()
+            onCompletionListener.invoke()
         }
     }
 
     private fun changeAudio(uri: Uri) {
         mediaPlayer.reset()
-        mediaPlayer.setDataSource(context, uri)
         mediaPlayer.setOnCompletionListener {
-            onCompletion.invoke()
+            onCompletionListener.invoke()
         }
+        mediaPlayer.setDataSource(context, uri)
         mediaPlayer.prepare()
     }
 
@@ -82,12 +81,18 @@ open class Player(open val context: Context) {
 
     fun other(uri: Uri) {
         if (isSrcSetted) {
+            Log.i(TAG, "other: srcSetted")
             changeAudio(uri)
         } else {
+            Log.i(TAG, "other: srcNotSetted")
             createMp(uri)
         }
-        isSrcSetted = true
 
+        mediaPlayer.setOnCompletionListener {
+            if (!::onCompletionListener.isInitialized) return@setOnCompletionListener
+            onCompletionListener.invoke()
+        }
+        isSrcSetted = true
         lastTrack = uri
     }
 
@@ -118,7 +123,6 @@ open class Player(open val context: Context) {
         curIndex = curIndex!! + 1
         return lst[curIndex!!]
     }
-
 
 
     fun seekTo(ms: Int) {

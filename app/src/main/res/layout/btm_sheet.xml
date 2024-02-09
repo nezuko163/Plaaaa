@@ -45,7 +45,19 @@
         app:thumbRadius="7dp"
         app:trackColorActive="@color/aqua"
         app:trackColorInactive="@color/cyan"
+        app:haloRadius="0dp"
+        app:labelBehavior="gone"
         app:trackHeight="4dp" />
+
+<!--    <Chronometer-->
+<!--        android:id="@+id/time_now"-->
+<!--        style="@style/TextAppearance.AppCompat.TextTime"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:format="0:00"-->
+<!--        app:layout_constraintStart_toStartOf="@id/slide"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/slide" />-->
 
     <TextView
         android:id="@+id/time_now"
