@@ -6,4 +6,5 @@
     <string name="perm_request_rationale">ну бля\n</string>
     <string name="request_perm_again">согл\n</string>
     <string name="dismiss">не согл</string>
+    <string name="notification_channel_name">pizda</string>
 </resources>

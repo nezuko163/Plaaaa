@@ -14,6 +14,7 @@ class BtmSheeet(val binding: BtmSheetBinding) {
     private val picasso = Picasso.get()
 
 
+
     fun initBtmSheet() {
         binding.apply {
             arrowImg.setOnClickListener {
@@ -32,6 +33,8 @@ class BtmSheeet(val binding: BtmSheetBinding) {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
         }
 
+        sheetBehavior.onDetachedFromLayoutParams()
+
         sheetBehavior.addBottomSheetCallback(btmSheetCallBack)
         sheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
@@ -48,6 +51,8 @@ class BtmSheeet(val binding: BtmSheetBinding) {
     fun hide() {
         sheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
+
+    fun state() = sheetBehavior.state
 
     fun bindBtmSheet(audio: Audio) {
         picasso

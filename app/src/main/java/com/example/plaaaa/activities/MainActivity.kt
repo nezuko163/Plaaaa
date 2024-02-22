@@ -16,8 +16,9 @@ import com.example.plaaaa.views.BtmSheeet
 import com.example.plaaaa.player.Player
 import com.squareup.picasso.Picasso
 import com.example.plaaaa.tools.PermissionUtil
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.slider.Slider
-
+import kotlinx.coroutines.Runnable
 
 
 class MainActivity : AppCompatActivity() {
@@ -30,6 +31,8 @@ class MainActivity : AppCompatActivity() {
     private val adapter = AudioAdapter()
     private var lst = ArrayList<Audio>()
 
+    private lateinit var myThread: Thread
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -38,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requirePermission() {
-        if (PermissionUtil.hasPermissions(this)) {
+        if (PermissionUtil.hasExternalStoragePermission(this)) {
             Toast.makeText(this, "aeee", Toast.LENGTH_LONG).show()
             init()
         } else {
@@ -144,6 +147,8 @@ class MainActivity : AppCompatActivity() {
 
         sheetBehavior = BtmSheeet(binding.btmsheet)
         sheetBehavior.initBtmSheet()
+
+        Thread(AeRunnable())
     }
 
     private fun playNext() {
@@ -166,7 +171,6 @@ class MainActivity : AppCompatActivity() {
                     val ms: Int = slider.value.toInt() * 1000
                     player.seekTo(ms)
                 }
-
             })
 
             slide.addOnChangeListener { slider, value, fromUser ->
@@ -176,6 +180,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+    }
+
+
+    inner class AeRunnable : Runnable {
+        var mins = 0
+        var secs = 0
+        override fun run() {
+            while (sheetBehavior.state() != BottomSheetBehavior.STATE_HIDDEN) {
+                if (!player.isPlaying()) {
+                    Thread.sleep(2000)
+                    continue
+                }
+                mins = (player.currentTime() / 1000) / 60
+                secs = (player.currentTime() / 1000) % 60
+                try {
+                    runOnUiThread {
+                        binding.btmsheet.timeNow.text =
+                            "${mins}:${secs.toString().padStart(2, '0')}"
+                    }
+                    Thread.sleep(500)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
 
