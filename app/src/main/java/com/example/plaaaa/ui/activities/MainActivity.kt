@@ -1,24 +1,27 @@
-package com.example.plaaaa.activities
+package com.example.plaaaa.ui.activities
 
 
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.plaaaa.R
-import com.example.plaaaa.adapter.Audio
-import com.example.plaaaa.adapter.AudioAdapter
+import com.example.plaaaa.ui.adapter.Audio
+import com.example.plaaaa.ui.adapter.AudioAdapter
 import com.example.plaaaa.databinding.ActivityMainBinding
 import com.example.plaaaa.tools.AllAudios
-import com.example.plaaaa.views.BtmSheeet
+import com.example.plaaaa.ui.views.BtmSheeet
 import com.example.plaaaa.player.Player
 import com.squareup.picasso.Picasso
 import com.example.plaaaa.tools.PermissionUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.Runnable
+import java.util.TreeMap
 
 
 class MainActivity : AppCompatActivity() {
@@ -97,6 +100,7 @@ class MainActivity : AppCompatActivity() {
                 player.other(audio.audio_uri)
                 player.play()
                 changePlayIcon(true)
+                Thread(AeRunnable()).start()
             }
         }
         binding.rcView.layoutManager = LinearLayoutManager(this)
@@ -121,7 +125,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             icon.setOnClickListener {
-                player.stop()
                 sheetBehavior.hide()
             }
 
@@ -134,6 +137,7 @@ class MainActivity : AppCompatActivity() {
                     sheetBehavior.bindBtmSheet(previous)
                     player.other(uri)
                     player.play()
+                    Thread(AeRunnable()).start()
 
                 } else player.seekTo(0)
             }
@@ -145,10 +149,24 @@ class MainActivity : AppCompatActivity() {
 
         initSlider()
 
+
+
         sheetBehavior = BtmSheeet(binding.btmsheet)
+        sheetBehavior.btmSheetCallBack = object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+
+                    player.stop()
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+
+        }
         sheetBehavior.initBtmSheet()
 
-        Thread(AeRunnable())
+        myThread = Thread(AeRunnable())
     }
 
     private fun playNext() {
@@ -159,6 +177,7 @@ class MainActivity : AppCompatActivity() {
         sheetBehavior.bindBtmSheet(next)
         player.other(uri)
         player.play()
+        Thread(AeRunnable()).start()
     }
 
     private fun initSlider() {
@@ -187,8 +206,12 @@ class MainActivity : AppCompatActivity() {
     inner class AeRunnable : Runnable {
         var mins = 0
         var secs = 0
+
+        @SuppressLint("SetTextI18n")
         override fun run() {
+            Thread.sleep(100)
             while (sheetBehavior.state() != BottomSheetBehavior.STATE_HIDDEN) {
+                Log.i(TAG, "run: 123")
                 if (!player.isPlaying()) {
                     Thread.sleep(2000)
                     continue
@@ -205,6 +228,7 @@ class MainActivity : AppCompatActivity() {
                     e.printStackTrace()
                 }
             }
+            return
         }
     }
 
@@ -212,20 +236,19 @@ class MainActivity : AppCompatActivity() {
     private fun changePlayIcon(isPlaying: Boolean) {
         if (isPlaying) {
             binding.btmsheet.play.setImageResource(R.drawable.pause)
-//            picasso
-//                .load(R.drawable.pause)
-//                .error(R.drawable.pause)
-//                .into(binding.btmsheet.play)
         } else {
             binding.btmsheet.play.setImageResource(R.drawable.play)
-//            picasso
-//                .load(R.drawable.play)
-//                .error(R.drawable.play)
-//                .into(binding.btmsheet.play)
         }
     }
 
     private fun onCompletion() {
         playNext()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::sheetBehavior.isInitialized) {
+            sheetBehavior.hide()
+        }
     }
 }

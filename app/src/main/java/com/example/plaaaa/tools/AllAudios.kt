@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.CodeBoy.MediaFacer.AudioGet
 import com.CodeBoy.MediaFacer.MediaFacer
-import com.example.plaaaa.adapter.Audio
+import com.example.plaaaa.ui.adapter.Audio
 
 class AllAudios {
     companion object {

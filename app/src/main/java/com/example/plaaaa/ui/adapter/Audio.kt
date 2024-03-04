@@ -1,4 +1,4 @@
-package com.example.plaaaa.adapter
+package com.example.plaaaa.ui.adapter
 
 import android.net.Uri
 

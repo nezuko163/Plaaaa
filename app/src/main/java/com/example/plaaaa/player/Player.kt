@@ -6,21 +6,24 @@ import android.media.MediaPlayer
 import android.media.MediaPlayer.OnCompletionListener
 import android.net.Uri
 import android.util.Log
-import com.example.plaaaa.adapter.Audio
+import androidx.media3.exoplayer.ExoPlayer
+import com.example.plaaaa.ui.adapter.Audio
 import com.example.plaaaa.tools.Tool
 import java.lang.IllegalStateException
 
-open class Player(open val context: Context) {
+class Player(val context: Context) {
+//    var exoPlayer = ExoPlayer.Builder(context)
+
     lateinit var mediaPlayer: MediaPlayer
     lateinit var lst: ArrayList<Audio>
     lateinit var onCompletionListener: () -> Unit
     var isLooping = false
     var curIndex: Int? = null
     var isSrcSetted = false
-    var lastTrack: Uri? = null
 
 
     private fun createMp(resId: Int) {
+
         createMp(Tool.resIdToUri(context, resId))
     }
 
@@ -62,7 +65,6 @@ open class Player(open val context: Context) {
             Log.i(TAG, "stop: 123")
             mediaPlayer.stop()
             mediaPlayer.release()
-            lastTrack = null
             isSrcSetted = false
             curIndex = null
         }
@@ -93,7 +95,6 @@ open class Player(open val context: Context) {
             onCompletionListener.invoke()
         }
         isSrcSetted = true
-        lastTrack = uri
     }
 
     fun previousTrack(): Audio? {

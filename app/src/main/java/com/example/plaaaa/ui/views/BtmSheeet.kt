@@ -1,17 +1,19 @@
-package com.example.plaaaa.views
+package com.example.plaaaa.ui.views
 
 import android.os.CountDownTimer
 import android.view.View
 import com.example.plaaaa.R
-import com.example.plaaaa.adapter.Audio
+import com.example.plaaaa.ui.adapter.Audio
 import com.example.plaaaa.databinding.BtmSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.squareup.picasso.Picasso
 import java.util.Timer
 
 class BtmSheeet(val binding: BtmSheetBinding) {
     private val sheetBehavior = BottomSheetBehavior.from(binding.root)
     private val picasso = Picasso.get()
+    lateinit var btmSheetCallBack: BottomSheetCallback
 
 
 
@@ -26,12 +28,7 @@ class BtmSheeet(val binding: BtmSheetBinding) {
         }
 
 
-        val btmSheetCallBack = object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-            }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-        }
 
         sheetBehavior.onDetachedFromLayoutParams()
 
