@@ -2,44 +2,51 @@ package com.example.plaaaa.player
 
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnCompletionListener
 import android.net.Uri
 import android.util.Log
-import androidx.media3.exoplayer.ExoPlayer
 import com.example.plaaaa.ui.adapter.Audio
 import com.example.plaaaa.tools.Tool
 import java.lang.IllegalStateException
 
 class Player(val context: Context) {
-//    var exoPlayer = ExoPlayer.Builder(context)
 
     lateinit var mediaPlayer: MediaPlayer
     lateinit var lst: ArrayList<Audio>
-    lateinit var onCompletionListener: () -> Unit
     var isLooping = false
     var curIndex: Int? = null
     var isSrcSetted = false
 
 
-    private fun createMp(resId: Int) {
+    lateinit var onCompletionListener: MediaPlayer.OnCompletionListener
+    lateinit var onErrorListener: MediaPlayer.OnErrorListener
 
+    public fun currentTrack(): Audio? =
+        if (curIndex != null) lst[curIndex!!] else null
+
+    private fun createMp(resId: Int) {
         createMp(Tool.resIdToUri(context, resId))
     }
 
-
-    private fun createMp(uri: Uri) {
-        mediaPlayer = MediaPlayer.create(context, uri)
-        mediaPlayer.setOnCompletionListener {
-            onCompletionListener.invoke()
+    public fun resetAtrributes() {
+        mediaPlayer.apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build()
+            )
+            setOnCompletionListener(onCompletionListener)
+            setOnErrorListener(onErrorListener)
         }
     }
 
+    private fun createMp(uri: Uri) {
+        mediaPlayer = MediaPlayer.create(context, uri)
+    }
+
     private fun changeAudio(uri: Uri) {
-        mediaPlayer.reset()
-        mediaPlayer.setOnCompletionListener {
-            onCompletionListener.invoke()
-        }
         mediaPlayer.setDataSource(context, uri)
         mediaPlayer.prepare()
     }
@@ -48,6 +55,7 @@ class Player(val context: Context) {
 
     fun play() {
         if (!isSrcSetted) {
+            Log.i(TAG, "play: соурс не сдан")
             return
         }
         try {
@@ -67,11 +75,14 @@ class Player(val context: Context) {
             mediaPlayer.release()
             isSrcSetted = false
             curIndex = null
-        }
+        } else Log.i(TAG, "stop: соурс нот сеттед")
     }
 
     fun pause() {
-        if (!isSrcSetted) return
+        if (!isSrcSetted) {
+            Log.i(TAG, "pause: соурс нот сеттед")
+            return
+        }
         if (mediaPlayer.isPlaying) mediaPlayer.pause()
     }
 
@@ -89,16 +100,15 @@ class Player(val context: Context) {
             Log.i(TAG, "other: srcNotSetted")
             createMp(uri)
         }
-
-        mediaPlayer.setOnCompletionListener {
-            if (!::onCompletionListener.isInitialized) return@setOnCompletionListener
-            onCompletionListener.invoke()
-        }
+        resetAtrributes()
         isSrcSetted = true
     }
 
     fun previousTrack(): Audio? {
-        if (curIndex == null) return null
+        if (curIndex == null) {
+            Log.i(TAG, "previousTrack: индекс не задан")
+            return null
+        }
         if (curIndex == 0) {
             if (isLooping) {
                 curIndex = lst.size - 1

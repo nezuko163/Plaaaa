@@ -3,6 +3,7 @@ package com.example.plaaaa.ui.activities
 
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -21,7 +22,6 @@ import com.example.plaaaa.tools.PermissionUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.Runnable
-import java.util.TreeMap
 
 
 class MainActivity : AppCompatActivity() {
@@ -33,8 +33,6 @@ class MainActivity : AppCompatActivity() {
     private val PERMISSION_STORAGE = 8000
     private val adapter = AudioAdapter()
     private var lst = ArrayList<Audio>()
-
-    private lateinit var myThread: Thread
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +78,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun initPlayer() {
         player = Player(applicationContext)
-        player.onCompletionListener = { onCompletion() }
+        player.onCompletionListener = MediaPlayer.OnCompletionListener {
+            onCompletion()
+        }
     }
 
     private fun initList() {
@@ -149,24 +149,18 @@ class MainActivity : AppCompatActivity() {
 
         initSlider()
 
-
-
         sheetBehavior = BtmSheeet(binding.btmsheet)
         sheetBehavior.btmSheetCallBack = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-
                     player.stop()
                 }
             }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            }
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
 
         }
         sheetBehavior.initBtmSheet()
-
-        myThread = Thread(AeRunnable())
     }
 
     private fun playNext() {

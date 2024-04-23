@@ -2,7 +2,7 @@ package com.example.plaaaa.ui.views
 
 import com.google.android.material.slider.Slider
 
-class onTouch : Slider.OnSliderTouchListener {
+class Slider : Slider.OnSliderTouchListener {
     override fun onStartTrackingTouch(slider: Slider) {
     }
 
