@@ -41,6 +41,7 @@ import android.widget.Toast
 import androidx.core.content.IntentCompat
 import androidx.media.AudioManagerCompat.AUDIOFOCUS_GAIN
 import androidx.media.MediaBrowserServiceCompat
+import androidx.media.session.MediaButtonReceiver
 import com.example.plaaaa.R
 import com.example.plaaaa.player.Player
 import com.example.plaaaa.ui.adapter.Audio
@@ -60,6 +61,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
 
     private val mediaSessionCallback: MediaSessionCompat.Callback =
         object : MediaSessionCompat.Callback() {
+
             override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
                 val keyEvent: KeyEvent? = mediaButtonEvent?.parcelable(
                     Intent.EXTRA_KEY_EVENT,
@@ -260,6 +262,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
             .setState(state, playbackPosition, playbackSpeed)
             .setActiveQueueItemId(if (player.curIndex == null) 0L else player.curIndex!!.toLong())
         playbackStateBuilder.setExtras(bundle)
+        playbackStateBuilder.setState(state, playbackPosition, playbackSpeed)
         mediaSessionCompat.setPlaybackState(playbackStateBuilder.build())
     }
 
@@ -274,6 +277,39 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
     override fun onCreate() {
         super.onCreate()
 
+        init()
+    }
+
+    private fun init() {
+        initMediaSession()
+        initPlayer()
+        initReciever()
+    }
+
+    private fun initReciever() {
+        val filter = IntentFilter(ACTION_AUDIO_BECOMING_NOISY)
+        registerReceiver(noisyReceiver, filter)
+    }
+
+
+
+    private fun initPlayer() {
+        player = Player(applicationContext)
+
+        player.onCompletionListener = OnCompletionListener {
+            val repeatMode = mediaSessionCompat.controller.repeatMode
+            when (repeatMode) {
+                REPEAT_MODE_ONE -> {}
+                REPEAT_MODE_ALL -> mediaSessionCallback.onSkipToNext()
+                else -> mediaSessionCallback.onStop()
+            }
+
+            mediaSessionCallback.onPrepare()
+            mediaSessionCallback.onPlay()
+        }
+    }
+
+    private fun initMediaSession() {
         mediaSessionCompat = MediaSessionCompat(baseContext, channelId).apply {
             setFlags(MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS)
             setCallback(mediaSessionCallback)
@@ -291,21 +327,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
 
             setPlaybackState(builder.build())
         }
-
-        player.onCompletionListener = OnCompletionListener {
-            val repeatMode = mediaSessionCompat.controller.repeatMode
-            when (repeatMode) {
-                REPEAT_MODE_ONE -> {}
-                REPEAT_MODE_ALL -> mediaSessionCallback.onSkipToNext()
-                else -> mediaSessionCallback.onStop()
-            }
-
-            mediaSessionCallback.onPrepare()
-            mediaSessionCallback.onPlay()
-        }
-
-        val filter = IntentFilter(ACTION_AUDIO_BECOMING_NOISY)
-        registerReceiver(noisyReceiver, filter)
     }
 
     override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
@@ -331,6 +352,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>,
     ) {
         result.sendResult(null)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSessionCompat, intent)
+        return super.onStartCommand(intent, flags, startId)
     }
 
     inline fun <reified T : Parcelable> Intent.parcelable(key: String, java: Class<KeyEvent>): T? =

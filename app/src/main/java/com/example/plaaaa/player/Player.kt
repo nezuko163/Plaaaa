@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.PowerManager
 import android.util.Log
 import com.example.plaaaa.ui.adapter.Audio
 import com.example.plaaaa.tools.Tool
@@ -39,6 +40,8 @@ class Player(val context: Context) {
             )
             setOnCompletionListener(onCompletionListener)
             setOnErrorListener(onErrorListener)
+            setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
+            setVolume(1.0f, 1.0f)
         }
     }
 

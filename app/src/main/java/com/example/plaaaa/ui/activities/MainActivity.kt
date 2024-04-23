@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -110,6 +111,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "MAIN_ACTIVITY"
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        return super.onCreateOptionsMenu(menu)
     }
 
     private fun initBtmSheet() {

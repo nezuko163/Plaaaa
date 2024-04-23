@@ -7,4 +7,5 @@
     <string name="request_perm_again">согл\n</string>
     <string name="dismiss">не согл</string>
     <string name="notification_channel_name">pizda</string>
+    <string name="pause">pause</string>
 </resources>
