@@ -14,23 +14,22 @@ import java.lang.IllegalStateException
 class Player(val context: Context) {
 
     lateinit var mediaPlayer: MediaPlayer
-    lateinit var lst: ArrayList<Audio>
+    lateinit var list: ArrayList<Audio>
     var isLooping = false
     var curIndex: Int? = null
     var isSrcSetted = false
-
 
     lateinit var onCompletionListener: MediaPlayer.OnCompletionListener
     lateinit var onErrorListener: MediaPlayer.OnErrorListener
 
     public fun currentTrack(): Audio? =
-        if (curIndex != null) lst[curIndex!!] else null
+        if (curIndex != null) list[curIndex!!] else null
 
     private fun createMp(resId: Int) {
         createMp(Tool.resIdToUri(context, resId))
     }
 
-    public fun resetAtrributes() {
+    private fun resetAtrributes() {
         mediaPlayer.apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
@@ -114,28 +113,28 @@ class Player(val context: Context) {
         }
         if (curIndex == 0) {
             if (isLooping) {
-                curIndex = lst.size - 1
-                return lst[curIndex!!]
+                curIndex = list.size - 1
+                return list[curIndex!!]
             }
             return null
         }
 
         curIndex = curIndex!! - 1
-        return lst[curIndex!!]
+        return list[curIndex!!]
     }
 
     fun nextTrack(): Audio? {
         if (curIndex == null) return null
-        if (curIndex == lst.size - 1) {
+        if (curIndex == list.size - 1) {
             if (isLooping) {
                 curIndex = 0
-                return lst[curIndex!!]
+                return list[curIndex!!]
             }
             return null
         }
 
         curIndex = curIndex!! + 1
-        return lst[curIndex!!]
+        return list[curIndex!!]
     }
 
 

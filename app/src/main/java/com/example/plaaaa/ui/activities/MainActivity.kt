@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
         lst.forEach {
             Log.i(TAG, "initList: ${it.audio_uri}")
         }
-        player.lst = lst
+        player.list = lst
     }
 
     private fun initRcView() {

@@ -17,14 +17,15 @@ import android.media.MediaPlayer.MEDIA_ERROR_IO
 import android.media.MediaPlayer.MEDIA_ERROR_MALFORMED
 import android.media.MediaPlayer.MEDIA_ERROR_UNKNOWN
 import android.media.MediaPlayer.OnCompletionListener
-import android.media.session.MediaSession.QueueItem
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Parcelable
 import android.service.media.MediaBrowserService
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.MediaSessionCompat.QueueItem
 import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ALL
 import android.support.v4.media.session.PlaybackStateCompat.REPEAT_MODE_ONE
@@ -55,7 +56,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
     private var currentIndex = -1L
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var player: Player
-    private val list: ArrayList<QueueItem> = ArrayList()
+    private val list: ArrayList<Audio> = ArrayList()
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var mediaSessionCompat: MediaSessionCompat
 
@@ -75,6 +76,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
                             else onPlay()
                         }
 
+                        KeyEvent.KEYCODE_MEDIA_STOP -> onStop()
                         KeyEvent.KEYCODE_MEDIA_PLAY -> onPlay()
                         KeyEvent.KEYCODE_MEDIA_PAUSE -> onPause()
                         KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD -> onSkipToPrevious()
@@ -100,7 +102,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
                 currentIndex = id
                 onPrepare()
                 if (playbackState == PlaybackStateCompat.STATE_PLAYING ||
-                    playbackState == STATE_SKIPPING_TO_NEXT) onPlay()
+                    playbackState == STATE_SKIPPING_TO_NEXT
+                ) onPlay()
             }
 
             override fun onSkipToNext() {
@@ -125,6 +128,30 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
                 }
 
                 onSkipToQueueItem(player.curIndex!!.toLong())
+            }
+
+            override fun onAddQueueItem(description: MediaDescriptionCompat?) {
+                onAddQueueItem(description, list.size)
+            }
+
+            override fun onAddQueueItem(description: MediaDescriptionCompat?, index: Int) {
+                super.onAddQueueItem(description, index)
+
+                val presetId = description?.extras?.getLong("queue_id")
+                var id: Number = when {
+                    presetId == null -> 0
+                    list.size < presetId -> list.size
+                    else -> presetId
+                }
+
+                val item = QueueItem(description, id,)
+                try {
+                    list.add(id.toInt(), item)
+                } catch (e: IndexOutOfBoundsException) {
+                    list.add(item)
+                }
+
+                mediaSessionCompat.setQueue(list)
             }
 
             override fun onPlay() {
@@ -212,7 +239,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
                 try {
                     val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
                     audioManager.abandonAudioFocusRequest(audioFocusRequest)
-                } catch (_: UninitializedPropertyAccessException) { }
+                } catch (_: UninitializedPropertyAccessException) {
+                }
 
                 setMediaPlaybackState(STATE_STOPPED)
                 stopSelf()
@@ -290,7 +318,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
         val filter = IntentFilter(ACTION_AUDIO_BECOMING_NOISY)
         registerReceiver(noisyReceiver, filter)
     }
-
 
 
     private fun initPlayer() {

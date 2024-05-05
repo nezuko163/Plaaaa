@@ -8,4 +8,7 @@
     <string name="dismiss">не согл</string>
     <string name="notification_channel_name">pizda</string>
     <string name="pause">pause</string>
+    <string name="play">play\n</string>
+    <string name="previous">previous</string>
+    <string name="next">next</string>
 </resources>
