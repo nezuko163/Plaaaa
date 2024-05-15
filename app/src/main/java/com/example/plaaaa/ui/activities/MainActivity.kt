@@ -2,10 +2,17 @@ package com.example.plaaaa.ui.activities
 
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.session.MediaController
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat.Callback
+import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.view.Menu
 import android.view.View
@@ -18,6 +25,7 @@ import com.example.plaaaa.databinding.ActivityMainBinding
 import com.example.plaaaa.tools.AllAudios
 import com.example.plaaaa.ui.views.BtmSheeet
 import com.example.plaaaa.player.Player
+import com.example.plaaaa.service.MediaPlaybackService1
 import com.squareup.picasso.Picasso
 import com.example.plaaaa.tools.PermissionUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -28,8 +36,12 @@ import kotlinx.coroutines.Runnable
 class MainActivity : AppCompatActivity() {
     private lateinit var sheetBehavior: BtmSheeet
     private lateinit var binding: ActivityMainBinding
+
+    //    private lateinit var player: Player
+    private lateinit var mediaBrowser: MediaBrowserCompat
+    private lateinit var connectionCallback: MediaBrowserCompat.ConnectionCallback
+
     private val picasso = Picasso.get()
-    private lateinit var player: Player
 
     private val PERMISSION_STORAGE = 8000
     private val adapter = AudioAdapter()
@@ -70,36 +82,82 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
         Log.i(TAG, "init: 123")
-        Log.i(TAG, "init: AEAAAEA")
-        initPlayer()
         initList()
+        initMediaBrowserService()
         initRcView()
         initBtmSheet()
     }
 
-    private fun initPlayer() {
-        player = Player(applicationContext)
-        player.onCompletionListener = MediaPlayer.OnCompletionListener {
-            onCompletion()
+    private fun initMediaBrowserService() {
+        initCallbacks()
+        mediaBrowser = MediaBrowserCompat(
+            this,
+            ComponentName(this, MediaPlaybackService1::class.java),
+            connectionCallback,
+            null
+        )
+    }
+
+    private fun initCallbacks() {
+        connectionCallback = object : MediaBrowserCompat.ConnectionCallback() {
+            override fun onConnected() {
+
+                // Get the token for the MediaSession
+                mediaBrowser.sessionToken.also { token ->
+
+                    // Create a MediaControllerCompat
+                    val mediaController = MediaControllerCompat(
+                        this@MainActivity, // Context
+                        token
+                    )
+
+                    // Save the controller
+                    MediaControllerCompat.setMediaController(this@MainActivity, mediaController)
+                }
+
+                // Finish building the UI
+                buildTransportControls()
+            }
+
+            override fun onConnectionSuspended() {
+                // The Service has crashed. Disable transport controls until it automatically reconnects
+            }
+
+            override fun onConnectionFailed() {
+                // The Service has refused our connection
+            }
         }
     }
+
+
+    fun buildTransportControls() {
+    }
+
 
     private fun initList() {
         lst = AllAudios.getAudios(applicationContext)
         lst.forEach {
             Log.i(TAG, "initList: ${it.audio_uri}")
         }
-        player.list = lst
+
+        val bundle = Bundle().apply {
+            putParcelableArrayList("list", lst)
+        }
+        MediaControllerCompat.getMediaController(this)
+            .sendCommand("set_list", bundle, null)
     }
 
     private fun initRcView() {
+        val mediaController = MediaControllerCompat.getMediaController(this)
         adapter.setList(lst)
         adapter.onTrackClick = { audio: Audio ->
             if (audio.audio_uri != null) {
                 sheetBehavior.bindBtmSheet(audio)
-                player.curIndex = adapter.pos
-                player.other(audio.audio_uri)
-                player.play()
+//                player.curIndex = adapter.pos
+//                player.other(audio.audio_uri)
+//                player.play()
+                mediaController.transportControls.skipToQueueItem(adapter.pos.toLong())
+
                 changePlayIcon(true)
                 Thread(AeRunnable()).start()
             }
@@ -120,11 +178,11 @@ class MainActivity : AppCompatActivity() {
     private fun initBtmSheet() {
         binding.btmsheet.apply {
             play.setOnClickListener {
-                if (player.isPlaying()) {
-                    player.pause()
+                if (mediaController.playbackState?.state == PlaybackStateCompat.STATE_PLAYING) {
+                    mediaController.transportControls.pause()
                     changePlayIcon(false)
                 } else {
-                    player.play()
+                    mediaController.transportControls.play()
                     changePlayIcon(true)
                 }
             }
@@ -134,7 +192,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             previous.setOnClickListener {
-                if (player.currentTime() / 1000 >= 5) {
+                if (mediaController.playbackState?.position .currentTime() / 1000 >= 5) {
                     val previous = player.previousTrack() ?: return@setOnClickListener
 
                     val uri = previous.audio_uri ?: return@setOnClickListener
@@ -242,6 +300,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun onCompletion() {
         playNext()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        volumeControlStream = AudioManager.STREAM_MUSIC
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
+        mediaBrowser.disconnect()
     }
 
     override fun onDestroy() {

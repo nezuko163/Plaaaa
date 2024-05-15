@@ -2,13 +2,13 @@
     <string name="app_name">Plaaaa</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="perm_request_rationale_title">разрешение\n</string>
-    <string name="perm_request_rationale">ну бля\n</string>
-    <string name="request_perm_again">согл\n</string>
+    <string name="perm_request_rationale_title">разрешение</string>
+    <string name="perm_request_rationale">ну бля</string>
+    <string name="request_perm_again">согл</string>
     <string name="dismiss">не согл</string>
     <string name="notification_channel_name">pizda</string>
     <string name="pause">pause</string>
-    <string name="play">play\n</string>
+    <string name="play">play</string>
     <string name="previous">previous</string>
     <string name="next">next</string>
 </resources>

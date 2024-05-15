@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Parcelable
+import android.os.ResultReceiver
 import android.service.media.MediaBrowserService
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
@@ -59,6 +60,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
     private val list: ArrayList<Audio> = ArrayList()
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var mediaSessionCompat: MediaSessionCompat
+
+
 
     private val mediaSessionCallback: MediaSessionCompat.Callback =
         object : MediaSessionCompat.Callback() {
@@ -101,7 +104,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
                 val playbackState = mediaSessionCompat.controller.playbackState.state
                 currentIndex = id
                 onPrepare()
-                if (playbackState == PlaybackStateCompat.STATE_PLAYING ||
+                if (playbackState == STATE_PLAYING ||
                     playbackState == STATE_SKIPPING_TO_NEXT
                 ) onPlay()
             }
@@ -134,25 +137,28 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
                 onAddQueueItem(description, list.size)
             }
 
-            override fun onAddQueueItem(description: MediaDescriptionCompat?, index: Int) {
-                super.onAddQueueItem(description, index)
 
-                val presetId = description?.extras?.getLong("queue_id")
-                var id: Number = when {
-                    presetId == null -> 0
-                    list.size < presetId -> list.size
-                    else -> presetId
-                }
+//            override fun onAddQueueItem(description: MediaDescriptionCompat?, index: Int) {
+//                super.onAddQueueItem(description, index)
+//
+//                val presetId = description?.extras?.getLong("queue_id")
+//                var id: Number = when {
+//                    presetId == null -> 0
+//                    list.size < presetId -> list.size
+//                    else -> presetId
+//                }
+//
+//                val item = QueueItem(description, id.toLong(),)
+//                try {
+//                    list.add(id.toInt(), item)
+//                } catch (e: IndexOutOfBoundsException) {
+//                    list.add(item)
+//                }
+//
+//                mediaSessionCompat.setQueue(list)
+//            }
 
-                val item = QueueItem(description, id,)
-                try {
-                    list.add(id.toInt(), item)
-                } catch (e: IndexOutOfBoundsException) {
-                    list.add(item)
-                }
 
-                mediaSessionCompat.setQueue(list)
-            }
 
             override fun onPlay() {
                 super.onPlay()
@@ -216,7 +222,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(), MediaPlayer.OnErrorLis
 
                     setCurrentMetadata()
                     refreshNotification()
-                    setMediaPlaybackState(0)
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_NONE)
 
                 } catch (_: IOException) {
                     onError(player.mediaPlayer, MEDIA_ERROR_UNKNOWN, MEDIA_ERROR_IO)
