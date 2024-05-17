@@ -42,15 +42,9 @@ class Tool {
 
         fun metadataBuilder(audio: Audio?, context: Context): MediaMetadataCompat.Builder? {
             if (audio == null) return null
-            val source = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                ImageDecoder.createSource(context.contentResolver, audio.art_uri!!)
-            } else {
-                TODO("VERSION.SDK_INT < P")
-            }
-            val bitmap = ImageDecoder.decodeBitmap(source)
 
             val builder = MediaMetadataCompat.Builder()
-                    .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ART_URI, audio.art_uri.toString())
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, audio.name)
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, audio.album)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, audio.artist)

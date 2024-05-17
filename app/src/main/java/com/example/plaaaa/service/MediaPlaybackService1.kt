@@ -4,11 +4,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer.OnCompletionListener
 import android.media.MediaPlayer.OnErrorListener
+import android.os.Binder
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -34,8 +36,6 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
 
     lateinit var player: Player
     lateinit var mediaSession: MediaSessionCompat
-    private lateinit var playbackState: PlaybackStateCompat.Builder
-    private lateinit var service: MediaBrowserService
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var noisyReceiver: NoisyReceiver
 
@@ -43,7 +43,17 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
     var index = -1
 
     lateinit var onErrorListener: OnErrorListener
-    lateinit var onCompletionListener: OnCompletionListener
+    val onCompletionListener = OnCompletionListener {
+        val repeatMode = mediaSession.controller.repeatMode
+        when (repeatMode) {
+            PlaybackStateCompat.REPEAT_MODE_ONE -> {}
+            PlaybackStateCompat.REPEAT_MODE_ALL -> callback.onSkipToNext()
+            else -> callback.onStop()
+        }
+
+        callback.onPrepare()
+        callback.onPlay()
+    }
 
 
     private val afChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
@@ -96,6 +106,8 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
                 )
                 setMediaMetadata()
                 refreshNotification()
+                Thread(PlayerPosition()).start()
+
             }
         }
 
@@ -183,10 +195,9 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
 
             if (command == null) return
 
-            if (command == "set_list") {
+            if (TextUtils.equals("set_list", command)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    list = extras?.getParcelableArrayList("list", Audio::class.java)!!
-                    player.list = list
+                    getList(extras)
                 }
             }
         }
@@ -208,15 +219,19 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
                 player.other(player.currentTrack()!!.audio_uri!!)
 //                player.resetAtrributes()
 
-                this@MediaPlaybackService1.refreshNotification()
-                this@MediaPlaybackService1.setMediaMetadata()
+                setMediaMetadata()
                 refreshNotification()
                 setMediaPlaybackState(PlaybackStateCompat.STATE_NONE)
-
             } catch (e: Exception) {
                 Log.i(TAG, "onPrepare: 123321123321")
             }
+
         }
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        stopSelf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -226,6 +241,7 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
                 "pause" -> callback.onPause()
                 "next" -> callback.onSkipToNext()
                 "previous" -> callback.onSkipToPrevious()
+                "set_list" -> getList(intent.extras)
             }
         }
         MediaButtonReceiver.handleIntent(mediaSession, intent)
@@ -240,6 +256,7 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
     }
 
     private fun init() {
+        Log.i(TAG, "init: 321")
         initMediaSession()
         initPlayer()
         initReceiver()
@@ -251,17 +268,8 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
 
     private fun initPlayer() {
         player = Player(applicationContext)
-        player.onCompletionListener = OnCompletionListener {
-            val repeatMode = mediaSession.controller.repeatMode
-            when (repeatMode) {
-                PlaybackStateCompat.REPEAT_MODE_ONE -> {}
-                PlaybackStateCompat.REPEAT_MODE_ALL -> callback.onSkipToNext()
-                else -> callback.onStop()
-            }
+        player.onCompletionListener = onCompletionListener
 
-            callback.onPrepare()
-            callback.onPlay()
-        }
     }
 
     private fun initMediaSession() {
@@ -290,6 +298,13 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
 
         if (::player.isInitialized) player.stop()
         if (::mediaSession.isInitialized) mediaSession.release()
+    }
+
+    private fun getList(bundle: Bundle?) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            list = bundle?.getParcelableArrayList("list", Audio::class.java)!!
+            player.list = list
+        }
     }
 
     private fun setMediaPlaybackState(state: Int, bundle: Bundle? = null) {
@@ -322,8 +337,17 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
         startForeground(CHANNEL_ID, builder.build())
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return super.onBind(intent)
+    inner class PlayerPosition : Runnable {
+        override fun run() {
+            while (mediaSession.controller.playbackState.state != PlaybackStateCompat.STATE_NONE ||
+                mediaSession.controller.playbackState.state != PlaybackStateCompat.STATE_STOPPED ||
+                mediaSession.controller.playbackState.state != PlaybackStateCompat.STATE_ERROR
+            ) {
+                val state = mediaSession.controller.playbackState.state
+                setMediaPlaybackState(state)
+                Thread.sleep(900)
+            }
+        }
     }
 
     override fun onGetRoot(
@@ -331,17 +355,39 @@ class MediaPlaybackService1 : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-        return if (TextUtils.equals(clientPackageName, packageName)) {
-            BrowserRoot(getString(R.string.app_name), null)
-        } else null
+        Log.i(TAG, "onGetRoot: con")
+        if (TextUtils.equals(clientPackageName, packageName)) {
+            Log.i(TAG, "onGetRoot: OH YEAAAH")
+            return BrowserRoot(getString(R.string.app_name), null)
+        } else {
+            Log.i(TAG, "onGetRoot: 123")
+            return null
+        }
     }
 
     override fun onLoadChildren(
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        TODO("Not yet implemented")
+        Log.i(TAG, "onLoadChildren: 123")
+        result.sendResult(null)
     }
+
+    override fun onBind(intent: Intent?): IBinder {
+        return PlayerServiceBinder()
+    }
+
+    inner class PlayerServiceBinder : Binder() {
+        fun getMediaSessionToken(): MediaSessionCompat.Token {
+            return mediaSession.sessionToken
+        }
+    }
+
+    override fun bindService(service: Intent, conn: ServiceConnection, flags: Int): Boolean {
+        Log.i(TAG, "bindService: 123")
+        return super.bindService(service, conn, flags)
+    }
+
 
     companion object {
         const val TAG = "PLAYBACK_SERVICE"

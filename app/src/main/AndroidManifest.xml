@@ -26,13 +26,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Plaaaa"
         tools:targetApi="31">
-
-        <service
-            android:name=".player.PlayerService"
-            android:enabled="true" />
-
         <receiver
-            android:name=".service.MediaPlaybackService1.NoisyReciever"
+            android:name=".service.MediaPlaybackService1$NoisyReceiver"
             android:exported="false" />
 
         <service

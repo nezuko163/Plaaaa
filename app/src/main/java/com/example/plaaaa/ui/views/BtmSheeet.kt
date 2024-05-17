@@ -1,20 +1,17 @@
 package com.example.plaaaa.ui.views
 
-import android.os.CountDownTimer
-import android.view.View
+import android.net.Uri
+import android.support.v4.media.MediaMetadataCompat
 import com.example.plaaaa.R
-import com.example.plaaaa.ui.adapter.Audio
 import com.example.plaaaa.databinding.BtmSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.squareup.picasso.Picasso
-import java.util.Timer
 
 class BtmSheeet(val binding: BtmSheetBinding) {
     private val sheetBehavior = BottomSheetBehavior.from(binding.root)
     private val picasso = Picasso.get()
     lateinit var btmSheetCallBack: BottomSheetCallback
-
 
 
     fun initBtmSheet() {
@@ -51,17 +48,17 @@ class BtmSheeet(val binding: BtmSheetBinding) {
 
     fun state() = sheetBehavior.state
 
-    fun bindBtmSheet(audio: Audio) {
+    fun bindBtmSheet(audio: MediaMetadataCompat) {
         picasso
-            .load(audio.art_uri)
+            .load(Uri.parse(audio.getString(MediaMetadataCompat.METADATA_KEY_ART_URI)))
             .error(R.drawable.flowers)
             .into(binding.icon)
 
-        binding.name.text = audio.name
-        binding.author.text = audio.artist
+        binding.name.text = audio.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
+        binding.author.text = audio.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
 
         binding.slide.value = 0f
-        binding.slide.valueTo = (audio.duration / 1000).toFloat()
+        binding.slide.valueTo = (audio.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) / 1000).toFloat()
 
         if (sheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN) sheetBehavior.state =
             BottomSheetBehavior.STATE_COLLAPSED
